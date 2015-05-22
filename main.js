@@ -13,10 +13,10 @@ window.onload = new function(){
 	document.body.appendChild(canvas);
 	renderer = new CanvasRenderer(canvas).init().resize(800, 600);
 	sprite = new Sprite(new Transform(), new Polygon().
-	add(-1, -1,	1,	0,	0,	1).
-	add(1,	-1,	0,	1,	0,	1).
+	add(0,	0,	1,	0,	0,	1).
+	add(1,	0,	0,	1,	0,	1).
 	add(1,	1,	0,	0,	1,	1).
-	add(-1,	1,	0,	0,	0,	1));
+	add(0,	1,	0,	0,	0,	1));
 	renderer.bufferSprite(sprite);
 	
 	var updatesPerSecond = 40;

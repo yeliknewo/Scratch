@@ -23,30 +23,24 @@ CanvasRenderer.prototype.bufferSprite = function(sprite){
 	var vertexBuffer = this.gl.createBuffer();
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
 	this.gl.bufferData(this.gl.ARRAY_BUFFER, sprite.polygon.vertexOut(), this.gl.STATIC_DRAW);
+	this.buffers[sprite.id+'v'] = vertexBuffer;
 	
 	var colorBuffer = this.gl.createBuffer();
 	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
 	this.gl.bufferData(this.gl.ARRAY_BUFFER, sprite.polygon.colorOut(), this.gl.STATIC_DRAW);
-	this.buffers[sprite.id + 'v'] = vertexBuffer;
-	this.buffers[sprite.id + 'c'] = colorBuffer;
+	this.buffers[sprite.id+'c'] = vertexBuffer;
 	
 	return this;
 };
 
 CanvasRenderer.prototype.renderSprite = function(sprite){
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id + 'v']);
-	this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'v']);
+	this.gl.vertexAttribPointer(this.vertexPositionAttribute, 2, this.gl.FLOAT, false, 0, 0);
 	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id + 'c']);
+	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'c']);
 	this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
 	
-	var positionMatrix = glMatrix.mat4.create();
-	positionMatrix = glMatrix.mat4.rotateZ(positionMatrix, positionMatrix, sprite.transform.rotationRad);
-	positionMatrix = glMatrix.mat4.translate(positionMatrix, positionMatrix, sprite.transform.position);
-	positionMatrix = glMatrix.mat4.scale(positionMatrix, positionMatrix, sprite.transform.scale);
-	
-	this.gl.uniformMatrix4fv(this.gl.getUniformLocation(this.shaderProgram, "uPMatrix"), this.gl.FALSE, new Float32Array(this.perspectiveMatrix));
-	this.gl.uniformMatrix4fv(this.gl.getUniformLocation(this.shaderProgram, 'uMVMatrix'), this.gl.FALSE, new Float32Array(positionMatrix));
+	this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
 	
 	this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, sprite.polygon.length);
 	
@@ -54,18 +48,17 @@ CanvasRenderer.prototype.renderSprite = function(sprite){
 };
 
 CanvasRenderer.prototype.prepFrame = function(){
-	this.perspectiveMatrix = glMatrix.mat4.perspective(glMatrix.mat4.create(), 45, this.canvas.width / this.canvas.height, 0.1, 100.0);
-	this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-	
+	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 	return this;
 };
 
 CanvasRenderer.prototype.init = function(){
 	if(this.gl){
 		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		this.gl.clearDepth(1.0);
 		this.gl.enable(this.gl.DEPTH_TEST);
 		this.gl.depthFunc(this.gl.LEQUAL);
-		this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		
 		this.fragmentShader = new Shader(this.gl, "x-shader/x-fragment").init();
 		this.vertexShader = new Shader(this.gl, "x-shader/x-vertex").init();
@@ -81,11 +74,13 @@ CanvasRenderer.prototype.init = function(){
 		
 		this.gl.useProgram(this.shaderProgram);
 		
-		this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexPosition");
+		this.vertexPositionAttribute = this.gl.getAttribLocation(this.shaderProgram, "aPosition");
 		this.gl.enableVertexAttribArray(this.vertexPositionAttribute);
 		
-		this.vertexColorAttribute = this.gl.getAttribLocation(this.shaderProgram, "aVertexColor");
+		this.vertexColorAttribute = this.gl.getAttribLocation(this.shaderProgram, 'aColor');
 		this.gl.enableVertexAttribArray(this.vertexColorAttribute);
+		
+		this.uniformScreenResolution = this.gl.getUniformLocation(this.shaderProgram, 'uResolution');
 	}else{
 		console.log('Unable to Initalize WebGL');
 	}
