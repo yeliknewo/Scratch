@@ -12,17 +12,22 @@ window.onload = new function(){
 	}
 	document.body.appendChild(canvas);
 	renderer = new CanvasRenderer(canvas).init().resize(800, 600);
-	sprite = new Sprite(new Transform(), new Polygon().
+	
+	sprite = new Sprite(new Transform(), [new Polygon().
 	add(0,	0,	1,	0,	0,	1).
-	add(1,	0,	0,	1,	0,	1).
-	add(1,	1,	0,	0,	1,	1).
-	add(0,	1,	0,	0,	0,	1));
+	add(40,	0,	0,	1,	0,	1).
+	add(40,	60,	0,	0,	1,	1).
+	add(0,	60,	0,	0,	0,	1)]);
+	
+	child = new Sprite(new Transform(), [new Polygon().add(10, 10, 0, 0, 0, 1).add(20, 10, 0, 0, 0, 1).add(20, 20, 0, 0, 0, 1)]);
+	sprite.addChild(child);
+	
 	renderer.bufferSprite(sprite);
 	
 	var updatesPerSecond = 40;
 	updateDelta = 1000 / updatesPerSecond;
 	lastUpdate = 0;
-		
+	
 	requestAnimationFrame(run);
 }
 
@@ -36,7 +41,7 @@ function run(timestamp){
 }
 
 function update(){
-	
+	sprite.transform.translate(1, 0);
 }
 
 function frame(){

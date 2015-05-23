@@ -7,7 +7,7 @@ function CanvasRenderer(canvas){
 	this.fragmentShader = null;
 	this.vertexShader = null;
 	this.buffers = {};
-	this.id = 0;
+	this.idSprite = 0;
 	
 	try{
 		this.gl = this.canvas.getContext('webgl');
@@ -18,32 +18,50 @@ function CanvasRenderer(canvas){
 }
 
 CanvasRenderer.prototype.bufferSprite = function(sprite){
-	sprite.id = this.id++;
+	sprite.id = this.idSprite++;
 	
-	var vertexBuffer = this.gl.createBuffer();
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
-	this.gl.bufferData(this.gl.ARRAY_BUFFER, sprite.polygon.vertexOut(), this.gl.STATIC_DRAW);
-	this.buffers[sprite.id+'v'] = vertexBuffer;
+	for(var i = 0;i<sprite.polygons.length;i++){
+		var polygon = sprite.polygons[i];
+		polygon.id = sprite.idPolygonCount++;
+		
+		var vertexBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, polygon.vertexOut(), this.gl.STATIC_DRAW);
+		this.buffers[sprite.id+'v'+polygon.id] = vertexBuffer;
+		
+		var colorBuffer = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
+		this.gl.bufferData(this.gl.ARRAY_BUFFER, polygon.colorOut(), this.gl.STATIC_DRAW);
+		this.buffers[sprite.id+'c'+polygon.id] = colorBuffer;
+	}
 	
-	var colorBuffer = this.gl.createBuffer();
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, colorBuffer);
-	this.gl.bufferData(this.gl.ARRAY_BUFFER, sprite.polygon.colorOut(), this.gl.STATIC_DRAW);
-	this.buffers[sprite.id+'c'] = vertexBuffer;
+	for(i = 0;i<sprite.children.length;i++){
+		this.bufferSprite(sprite.children[i]);
+	}
 	
 	return this;
 };
 
 CanvasRenderer.prototype.renderSprite = function(sprite){
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'v']);
-	this.gl.vertexAttribPointer(this.vertexPositionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+	for(var i = 0;i<sprite.polygons.length;i++){
+		var polygon = sprite.polygons[i];
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'v'+polygon.id]);
+		this.gl.vertexAttribPointer(this.vertexPositionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+		
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'c'+polygon.id]);
+		this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
+		
+		this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
+		var transform = sprite.getWorldTransform();
+		this.gl.uniform2f(this.uniformTranslation, transform.position[0], transform.position[1]);
+		
+		this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, polygon.length);
+	}
 	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'c']);
-	this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
-	
-	this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
-	
-	this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, sprite.polygon.length);
-	
+	for(var i = 0;i<sprite.children.length;i++){
+		this.renderSprite(sprite.children[i]);
+	}
+
 	return this;
 };
 
@@ -55,9 +73,6 @@ CanvasRenderer.prototype.prepFrame = function(){
 CanvasRenderer.prototype.init = function(){
 	if(this.gl){
 		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		this.gl.clearDepth(1.0);
-		this.gl.enable(this.gl.DEPTH_TEST);
-		this.gl.depthFunc(this.gl.LEQUAL);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		
 		this.fragmentShader = new Shader(this.gl, "x-shader/x-fragment").init();
@@ -81,6 +96,8 @@ CanvasRenderer.prototype.init = function(){
 		this.gl.enableVertexAttribArray(this.vertexColorAttribute);
 		
 		this.uniformScreenResolution = this.gl.getUniformLocation(this.shaderProgram, 'uResolution');
+
+		this.uniformTranslation = this.gl.getUniformLocation(this.shaderProgram, 'uTranslation');
 	}else{
 		console.log('Unable to Initalize WebGL');
 	}

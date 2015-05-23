@@ -1,10 +1,10 @@
 var glMatrix = require('gl-matrix');
 var CONST = require('./../Constants.js');
 
-function Transform(position, rotationRad, scale, depth){
-	this.position = position ? position : glMatrix.vec2.set(glMatrix.vec2.create(), 0, 0, CONST.DEFAULT_DEPTH);
+function Transform(position, rotationRad, scale){
+	this.position = position ? position : glMatrix.vec2.fromValues(0,0);
 	this.rotationRad = rotationRad ? rotationRad : 0;
-	this.scale = scale ? scale : glMatrix.vec3.set(glMatrix.vec3.create(), 1, 1, 1);
+	this.scale = scale ? scale : glMatrix.vec2.fromValues(1, 1);
 }
 
 Transform.prototype.translate = function(x, y){
@@ -29,6 +29,10 @@ Transform.prototype.setRotationDeg = function(deg){
 
 Transform.prototype.getRotationDeg = function(){
 	return this.rotationRad * CONST.RAD_TO_DEG;
+};
+
+Transform.prototype.clone = function(){
+	return new Transform(glMatrix.vec2.clone(this.position), this.rotationRad, glMatrix.vec2.clone(this.scale));
 };
 
 module.exports = Transform;

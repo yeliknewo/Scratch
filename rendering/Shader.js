@@ -28,9 +28,10 @@ Shader.prototype.init = function(){
 			'attribute vec2 aPosition;'+		
 			'attribute vec4 aColor;'+
 			'uniform vec2 uResolution;'+
+			'uniform vec2 uTranslation;'+
 			'varying lowp vec4 vColor;'+
 			'void main(){'+
-				'gl_Position = vec4(((aPosition / uResolution) * 2.0) - 1.0, 0.0, 1.0);'+
+				'gl_Position = vec4((((aPosition + uTranslation) / uResolution) * 2.0) - 1.0, 0.0, 1.0);'+
 				'vColor = aColor;'+
 			'}';
 		}else{

@@ -4,6 +4,7 @@ function Polygon(){
 	this.points = [];
 	this.colors = [];
 	this.length = 0;
+	this.id = 0;
 }
 
 Polygon.prototype.add = function(x, y, r, g, b, a){
