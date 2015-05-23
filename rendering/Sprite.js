@@ -4,15 +4,15 @@ var Polygon = require('./Polygon.js');
 function Sprite(transform, polygons, parent){
 	this.transform = transform ? transform : new Transform();
 	this.polygons = polygons ? polygons : [];
-	this.id = null;
 	this.parent = parent ? parent : null;
+	this.id = null;
 	this.children = [];
 	this.idPolygonCount = 0;
 }
 
 Sprite.prototype.getWorldTransform = function(){
 	if(this.parent){
-		return this.transform.clone().chainTranslate(this.parent.getWorldTransform().position);
+		return this.transform.clone().chainAll(this.parent.getWorldTransform());
 	}else{
 		return this.transform.clone();
 	}

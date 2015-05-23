@@ -52,8 +52,11 @@ CanvasRenderer.prototype.renderSprite = function(sprite){
 		this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
 		
 		this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
+		
 		var transform = sprite.getWorldTransform();
-		this.gl.uniform2f(this.uniformTranslation, transform.position[0], transform.position[1]);
+		this.gl.uniform2fv(this.uniformTranslation, transform.position);
+		this.gl.uniform2fv(this.uniformScale, transform.scale);
+		this.gl.uniform2fv(this.uniformRotation, transform.rotationVector);
 		
 		this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, polygon.length);
 	}
@@ -96,8 +99,9 @@ CanvasRenderer.prototype.init = function(){
 		this.gl.enableVertexAttribArray(this.vertexColorAttribute);
 		
 		this.uniformScreenResolution = this.gl.getUniformLocation(this.shaderProgram, 'uResolution');
-
 		this.uniformTranslation = this.gl.getUniformLocation(this.shaderProgram, 'uTranslation');
+		this.uniformScale = this.gl.getUniformLocation(this.shaderProgram, 'uScale');
+		this.uniformRotation = this.gl.getUniformLocation(this.shaderProgram, 'uRotation');
 	}else{
 		console.log('Unable to Initalize WebGL');
 	}
@@ -112,29 +116,5 @@ CanvasRenderer.prototype.resize = function(width, height){
 	
 	return this;
 };
-
-/*
-CanvasRenderer.prototype.drawScene = function(){
-	this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-	
-	this.perspectiveMatrix = glMatrix.mat4.create();
-	this.mvMatrix = glMatrix.mat4.create();
-	
-	this.mvMatrixCopy = glMatrix.mat4.clone(this.mvMatrix);
-	this.mvMatrix = glMatrix.mat4.rotate(this.mvMatrix, this.mvMatrix, this.squareRotation, glMatrix.vec3.set(glMatrix.vec3.create(), 1, 0, 1));
-		
-	this.mvMatrix = glMatrix.mat4.translate(this.mvMatrix, this.mvMatrix, glMatrix.vec3.set(glMatrix.vec3.create(), 0.0, 0.0, -6.0));
-	this.perspectiveMatrix = glMatrix.mat4.perspective(this.perspectiveMatrix, 45, this.canvas.width / this.canvas.height, 0.1, 100.0);	
-	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareVerticesBuffer);
-	this.gl.vertexAttribPointer(this.vertexPositionAttribute, 3, this.gl.FLOAT, false, 0, 0);
-	
-	this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.squareVerticesColorBuffer);
-	this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
-	
-	this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-	
-	return this;
-}*/
 
 module.exports = CanvasRenderer;

@@ -2,8 +2,9 @@ var CanvasRenderer = require('./rendering/CanvasRenderer.js');
 var Sprite = require('./rendering/Sprite.js');
 var Polygon = require('./rendering/Polygon.js');
 var Transform = require('./rendering/Transform.js');
+var InputManager = require('./game/InputManager.js');
 
-var renderer, updateDelta, lastUpdate, sprite;
+var renderer, updateDelta, lastUpdate, stage, child, input;
 
 window.onload = new function(){
 	var canvas = document.getElementById('canvas');
@@ -13,16 +14,24 @@ window.onload = new function(){
 	document.body.appendChild(canvas);
 	renderer = new CanvasRenderer(canvas).init().resize(800, 600);
 	
-	sprite = new Sprite(new Transform(), [new Polygon().
-	add(0,	0,	1,	0,	0,	1).
-	add(40,	0,	0,	1,	0,	1).
-	add(40,	60,	0,	0,	1,	1).
-	add(0,	60,	0,	0,	0,	1)]);
+	input = new InputManager(canvas);
 	
-	child = new Sprite(new Transform(), [new Polygon().add(10, 10, 0, 0, 0, 1).add(20, 10, 0, 0, 0, 1).add(20, 20, 0, 0, 0, 1)]);
-	sprite.addChild(child);
+	stage = new Sprite(new Transform(), []);
 	
-	renderer.bufferSprite(sprite);
+	child = new Sprite(new Transform([400, 300]), [
+	new Polygon().
+	add(-10, -10, 1, 0, 0, 1).
+	add(10, -10, 1, 0, 0, 1).
+	add(10, 10, 1, 0, 0, 1), 
+	new Polygon().
+	add(-10, -10, 0, 0, 1, 1).
+	add(-10, 10, 0, 0, 1, 1).
+	add(10, 10, 0, 0, 1, 1)
+	]);
+	
+	stage.addChild(child);
+	
+	renderer.bufferSprite(child);
 	
 	var updatesPerSecond = 40;
 	updateDelta = 1000 / updatesPerSecond;
@@ -41,10 +50,11 @@ function run(timestamp){
 }
 
 function update(){
-	sprite.transform.translate(1, 0);
+	child.transform.position = input.mousePosition;
+	child.transform.rotateDeg(1);
 }
 
 function frame(){
 	renderer.prepFrame();
-	renderer.renderSprite(sprite);
+	renderer.renderSprite(stage);
 }
