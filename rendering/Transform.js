@@ -1,25 +1,27 @@
 var glMatrix = require('gl-matrix');
 var CONST = require('./../Constants.js');
 
-function Transform(position, rotation, scale){
-	this.position = position ? position : glMatrix.vec2.fromValues(0,0);
-	this.rotation = rotation ? rotation : 0;
+function Transform(){
+	this.rotationVector = glMatrix.vec2.create();
+	this.position = glMatrix.vec2.create();
+	this.rotation = 0;
 	this.setRotation(this.rotation);
-	this.scale = scale ? scale : glMatrix.vec2.fromValues(1, 1);
+	this.scale = glMatrix.vec2.fromValues(1,1);
 }
 
 Transform.prototype.translate = function(x, y){
-	this.chainTranslate(glMatrix.vec2.fromValues(x,y));
+	this.chainTranslate([x,y]);
 	return this;
 };
 
 Transform.prototype.multScale = function(x,y){
-	this.chainScale(glMatrix.vec2.fromValues(x,y));
+	this.chainScale([x,y]);
 	return this;
 };
 
 Transform.prototype.chainTranslate = function(next){
-	this.position = glMatrix.vec2.add(this.position, this.position, next);
+	this.position[0] += next[0];
+	this.position[1] += next[1];
 	return this;
 };
 
@@ -29,7 +31,8 @@ Transform.prototype.chainRotate = function(next){
 };
 
 Transform.prototype.chainScale = function(next){
-	this.scale = glMatrix.vec2.multiply(this.scale, this.scale, next);
+	this.scale[0] *= next[0];
+	this.scale[1] *= next[1];
 	return this;
 };
 
@@ -56,12 +59,13 @@ Transform.prototype.getRotationDeg = function(){
 
 Transform.prototype.setRotation = function(rotation){
 	this.rotation = rotation;
-	this.rotationVector = glMatrix.vec2.fromValues(Math.sin(this.rotation), Math.cos(this.rotation));
+	this.rotationVector[0] = Math.sin(this.rotation);
+	this.rotationVector[1] = Math.cos(this.rotation);
 	return this;
 };
 
 Transform.prototype.clone = function(){
-	return new Transform(glMatrix.vec2.clone(this.position), this.rotation, glMatrix.vec2.clone(this.scale));
+	return new Transform().chainAll(this);
 };
 
 module.exports = Transform;

@@ -27,13 +27,13 @@ Shader.prototype.init = function(){
 			this.source = 
 			'attribute vec2 aPosition;'+		
 			'attribute vec4 aColor;'+
+			'attribute vec2 aTranslation;'+
+			'attribute vec2 aRotation;'+
+			'attribute vec2 aScale;'+
 			'uniform vec2 uResolution;'+
-			'uniform vec2 uTranslation;'+
-			'uniform vec2 uScale;'+
-			'uniform vec2 uRotation;'+
 			'varying lowp vec4 vColor;'+
 			'void main(){'+
-				'gl_Position = vec4(((((vec2(aPosition.x * uRotation.y + aPosition.y * uRotation.x, aPosition.y * uRotation.y - aPosition.x * uRotation.x) + uTranslation) / uResolution) * 2.0) - 1.0) * uScale, 0.0, 1.0);'+
+				'gl_Position = vec4(((((vec2(aPosition.x * aRotation.y + aPosition.y * aRotation.x, aPosition.y * aRotation.y - aPosition.x * aRotation.x) + aTranslation) / uResolution) * 2.0) - 1.0) * aScale, 0.0, 1.0);'+
 				'vColor = aColor;'+
 			'}';
 		}else{
