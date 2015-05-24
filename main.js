@@ -12,7 +12,6 @@ window.onload = new function(){
 		canvas = document.createElement('canvas');
 	}
 	document.body.appendChild(canvas);
-	canvas.style.cursor = 'none';
 	renderer = new CanvasRenderer(canvas).init().resize(800, 600);
 	
 	input = new InputManager(canvas);
