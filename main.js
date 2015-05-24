@@ -18,7 +18,7 @@ window.onload = new function(){
 	
 	stage = new Sprite(new Transform(), []);
 	
-	child = new Sprite(new Transform(), [
+	child = new Sprite(new Transform([400, 300]), [
 	new Polygon().
 	add(-10, -10, 1, 0, 0, 1).
 	add(10, -10, 1, 0, 0, 1).
@@ -52,7 +52,6 @@ function run(timestamp){
 function update(){
 	child.transform.position = input.mousePosition;
 	child.transform.rotateDeg(1);
-	//stage.updateWorldTransform();
 }
 
 function frame(){
