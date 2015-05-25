@@ -1,5 +1,5 @@
 var Shader = require('./Shader.js');
-var glMatrix = require('gl-matrix');
+var Transform = require('./Transform.js');
 
 function CanvasRenderer(canvas){
 	this.canvas = canvas;
@@ -8,6 +8,7 @@ function CanvasRenderer(canvas){
 	this.vertexShader = null;
 	this.buffers = {};
 	this.idSprite = 0;
+	this.workingTransform = new Transform();
 	
 	try{
 		this.gl = this.canvas.getContext('webgl');
@@ -45,18 +46,18 @@ CanvasRenderer.prototype.bufferSprite = function(sprite){
 CanvasRenderer.prototype.renderSprite = function(sprite){
 	for(var i = 0;i<sprite.polygons.length;i++){
 		var polygon = sprite.polygons[i];
+		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'v'+polygon.id]);
 		this.gl.vertexAttribPointer(this.vertexPositionAttribute, 2, this.gl.FLOAT, false, 0, 0);
 		
 		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffers[sprite.id+'c'+polygon.id]);
 		this.gl.vertexAttribPointer(this.vertexColorAttribute, 4, this.gl.FLOAT, false, 0, 0);
 		
-		this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
+		this.workingTransform.reset().chainAll(sprite.getWorldTransform());
 		
-		var transform = sprite.getWorldTransform();
-		this.gl.uniform2fv(this.uniformTranslation, transform.position);
-		this.gl.uniform2fv(this.uniformScale, transform.scale);
-		this.gl.uniform2fv(this.uniformRotation, transform.rotationVector);
+		this.gl.uniform2fv(this.uniformTranslation, this.workingTransform.position);
+		this.gl.uniform2fv(this.uniformScale, this.workingTransform.scale);
+		this.gl.uniform2fv(this.uniformRotation, this.workingTransform.rotationVector);
 		
 		this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, polygon.length);
 	}
@@ -64,18 +65,18 @@ CanvasRenderer.prototype.renderSprite = function(sprite){
 	for(var i = 0;i<sprite.children.length;i++){
 		this.renderSprite(sprite.children[i]);
 	}
-
 	return this;
 };
 
 CanvasRenderer.prototype.prepFrame = function(){
 	this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+	this.gl.uniform2f(this.uniformScreenResolution, this.canvas.width, this.canvas.height);
 	return this;
 };
 
 CanvasRenderer.prototype.init = function(){
 	if(this.gl){
-		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		this.gl.clearColor(0.1, 0.1, 0.1, 1.0);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 		
 		this.fragmentShader = new Shader(this.gl, "x-shader/x-fragment").init();

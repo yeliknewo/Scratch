@@ -2,9 +2,9 @@ var CanvasRenderer = require('./rendering/CanvasRenderer.js');
 var Sprite = require('./rendering/Sprite.js');
 var Polygon = require('./rendering/Polygon.js');
 var Transform = require('./rendering/Transform.js');
-var InputManager = require('./game/InputManager.js');
+var glMatrix = require('gl-matrix');
 
-var renderer, updateDelta, lastUpdate, stage, child, input;
+var renderer, updateDelta, lastUpdate, stage, child, child2, input;
 
 window.onload = new function(){
 	var canvas = document.getElementById('canvas');
@@ -14,11 +14,9 @@ window.onload = new function(){
 	document.body.appendChild(canvas);
 	renderer = new CanvasRenderer(canvas).init().resize(800, 600);
 	
-	input = new InputManager(canvas);
-	
 	stage = new Sprite(new Transform(), []);
 	
-	child = new Sprite(new Transform([400, 300]), [
+	child = new Sprite(new Transform([0, 300]), [
 	new Polygon().
 	add(-10, -10, 1, 0, 0, 1).
 	add(10, -10, 1, 0, 0, 1).
@@ -27,11 +25,22 @@ window.onload = new function(){
 	add(-10, -10, 0, 0, 1, 1).
 	add(-10, 10, 0, 0, 1, 1).
 	add(10, 10, 0, 0, 1, 1)
-	]);
-	
-	stage.addChild(child);
+	], stage);
 	
 	renderer.bufferSprite(child);
+	
+	child2 = new Sprite(new Transform([0, 20]), [
+	new Polygon().
+	add(-10, -10, 0, 1, 0, 1).
+	add(10, -10, 0, 1, 0, 1).
+	add(10, 10, 0, 1, 0, 1), 
+	new Polygon().
+	add(-10, -10, 0, 0, 1, 1).
+	add(-10, 10, 0, 0, 1, 1).
+	add(10, 10, 0, 0, 1, 1)
+	], child);
+	
+	renderer.bufferSprite(child2);
 	
 	var updatesPerSecond = 40;
 	updateDelta = 1000 / updatesPerSecond;
@@ -50,7 +59,7 @@ function run(timestamp){
 }
 
 function update(){
-	child.transform.position = input.mousePosition;
+	child.transform.translate(1, 0);
 	child.transform.rotateDeg(1);
 }
 

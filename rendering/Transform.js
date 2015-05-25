@@ -2,15 +2,33 @@ var glMatrix = require('gl-matrix');
 var CONST = require('./../Constants.js');
 
 function Transform(position, rotation, scale){
-	this.position = position ? position : glMatrix.vec2.fromValues(0,0);
-	this.rotation = rotation ? rotation : 0;
-	this.setRotation(this.rotation);
-	this.scale = scale ? scale : glMatrix.vec2.fromValues(1, 1);
+	this.position = glMatrix.vec2.create();
+	this.rotation = 0;
+	this.rotationVector = glMatrix.vec2.create();
+	this.scale = glMatrix.vec2.fromValues(1,1);
+	this.reset();
+	if(position)
+		this.chainTranslate(position);
+	if(rotation)
+		this.chainRotate(rotation);
+	if(scale)
+		this.chainScale(scale);
 }
 
 Transform.prototype.translate = function(x, y){
 	this.chainTranslate(glMatrix.vec2.fromValues(x,y));
 	return this;
+};
+
+Transform.prototype.setSprite = function(sprite){
+	this.sprite = sprite;
+	return this;
+};
+
+Transform.prototype.updateSprite = function(){
+	if(this.sprite){
+		this.sprite.queueWorldTransform();
+	}
 };
 
 Transform.prototype.multScale = function(x,y){
@@ -19,7 +37,8 @@ Transform.prototype.multScale = function(x,y){
 };
 
 Transform.prototype.chainTranslate = function(next){
-	this.position = glMatrix.vec2.add(this.position, this.position, next);
+	glMatrix.vec2.add(this.position, this.position, next);
+	this.updateSprite();
 	return this;
 };
 
@@ -29,7 +48,8 @@ Transform.prototype.chainRotate = function(next){
 };
 
 Transform.prototype.chainScale = function(next){
-	this.scale = glMatrix.vec2.multiply(this.scale, this.scale, next);
+	glMatrix.vec2.multiply(this.scale, this.scale, next);
+	this.updateSprite();
 	return this;
 };
 
@@ -56,12 +76,21 @@ Transform.prototype.getRotationDeg = function(){
 
 Transform.prototype.setRotation = function(rotation){
 	this.rotation = rotation;
-	this.rotationVector = glMatrix.vec2.fromValues(Math.sin(this.rotation), Math.cos(this.rotation));
+	glMatrix.vec2.set(this.rotationVector, Math.cos(this.rotation), Math.sin(this.rotation));
+	this.updateSprite();
 	return this;
 };
 
 Transform.prototype.clone = function(){
 	return new Transform(glMatrix.vec2.clone(this.position), this.rotation, glMatrix.vec2.clone(this.scale));
+};
+
+Transform.prototype.reset = function(){
+	glMatrix.vec2.set(this.position, 0, 0);
+	this.setRotation(0);
+	glMatrix.vec2.set(this.scale, 1, 1);
+	this.updateSprite();
+	return this;
 };
 
 module.exports = Transform;
