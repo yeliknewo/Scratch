@@ -19,9 +19,12 @@ Sprite.prototype.getWorldTransform = function(){
 		return this.worldTransform;
 	}else{
 		this.worldTransformCurrent = true;
-		this.worldTransform.reset().chainAll(this.transform);
+		this.worldTransform.reset();
 		if(this.parent){
-			this.worldTransform.chainAll(this.parent.getWorldTransform());
+			var pwt = this.parent.getWorldTransform();
+			this.worldTransform.chainAll(pwt).rotateAroundParent(this.transform, pwt).chainRotate(this.transform.rotation).chainScale(this.transform.scale);
+		}else{
+			this.worldTransform.chainAll(this.transform);
 		}
 		return this.worldTransform;
 	}

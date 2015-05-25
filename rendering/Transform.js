@@ -15,6 +15,19 @@ function Transform(position, rotation, scale){
 		this.chainScale(scale);
 }
 
+Transform.prototype.rotateAroundParent = function(myTransform, parentTransform){
+	this.translate(
+	myTransform.position[0] * parentTransform.rotationVector[0] - myTransform.position[1] * parentTransform.rotationVector[1],
+	myTransform.position[0] * parentTransform.rotationVector[1] + myTransform.position[1] * parentTransform.rotationVector[0]);
+	return this;
+};
+
+Transform.prototype.setPosition = function(x, y){
+	glMatrix.vec2.set(this.position, x, y);
+	this.updateSprite();
+	return this;
+};
+
 Transform.prototype.translate = function(x, y){
 	this.chainTranslate(glMatrix.vec2.fromValues(x,y));
 	return this;
